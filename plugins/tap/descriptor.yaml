@@ -1,0 +1,10 @@
+plugin:
+  name: tap
+  version: master
+  source:
+    type: git
+    url: https://github.com/mod-audio/tap-lv2.git
+  build:
+    - make
+  install:
+    - make install INSTALL_PATH=${LV2_DIR}
