@@ -63,8 +63,12 @@ build:
 
 ### Submodules
 
-DPF is always a submodule. Run `git submodule update --init --recursive`
-before building if the plugin hasn't been cloned with `--recursive`.
+DPF is always a submodule. `build.sh` clones the top-level repo without
+recursing into submodules, rewrites any SSH-style URLs in `.gitmodules`
+(`user@host:path`, `ssh://user@host/path`) to HTTPS so they can be fetched
+without authentication (at every nesting level), and then resolves the
+submodule tree itself — each child cloned with depth 1. Descriptor build
+lines that also run `submodule update --init --recursive` are harmless no-ops.
 
 ---
 
@@ -385,10 +389,12 @@ target arch). For native builds, keep the generator; for cross-builds, use
 `-DSKIP_LV2_TTL_GENERATOR=ON` and supply pre-generated TTL.
 
 ### Submodule depth
-`git submodule update --init --recursive` can pull enormous histories
-(JUCE alone is ~1GB). The builder already clones with `--depth 1` at the
-top level, but submodules may not respect that. For very large repos,
-consider `--depth 1` in submodule init or shallow submodule config.
+Submodule histories can be enormous (JUCE alone is ~1GB). The builder clones
+the top level with `--depth 1`, marks every submodule at every nesting level
+for a depth-1 clone (`submodule.<name>.shallow`), and only fetches more when
+a pinned commit isn't reachable from its default branch tip. If the build
+machine's git predates that setting, submodules fall back to full-history
+fetches — still correct, just larger.
 
 ### Parallel builds
 Use `--parallel` or `-jN` for cmake/make. On Pi 5 (4 cores, 8GB RAM),

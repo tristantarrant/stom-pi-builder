@@ -78,6 +78,107 @@ check_dependencies() {
   return 0
 }
 
+# Rewrite SSH-style submodule URLs in .gitmodules to HTTPS so submodules can be fetched without authentication. Handles scp-like `user@host:path` and scheme-form `ssh://[user]@host[:port]/path`; http(s)/git/file URLs are left alone. Must run after cloning, before resolving submodules; a no-op when the file is missing or nothing converts (only logs when it changes something).
+rewrite_ssh_submodule_urls() {
+  local gitmodules="$1/.gitmodules"
+  [ -f "$gitmodules" ] || return 0
+  grep -Eq 'url[[:space:]]*=[[:space:]]*"?(ssh://|[A-Za-z0-9._%-]+@)' "$gitmodules" || return 0
+
+  python3 - "$gitmodules" <<'PYEOF'
+import re, sys
+
+path = sys.argv[1]
+with open(path) as f:
+    original = f.read()
+
+changed = []
+
+
+def record(url, m):
+    changed.append(url)
+    return '{0}{1}'.format(m['prefix'], url)
+
+
+# scp-style: [ws]url[ws]=[ws]"?user@host:path"?  -> https://host/path
+scp = re.compile(
+    r'^(?P<prefix>\s*url\s*=\s*)'   # leading whitespace + "url ="
+    r'"?'                           # optional opening quote
+    r'[A-Za-z0-9._%-]+@'            # user (any username, e.g. git) -> dropped
+    r'(?P<host>[A-Za-z0-9.-]+)'     # host
+    r':'                            # scp-style colon separator
+    r'(?P<p>\S+?)'                  # repository path (no whitespace/quote)
+    r'"?\s*$',                      # optional closing quote + end of line
+    flags=re.M,
+)
+
+
+def rewrite_scp(m):
+    return record('https://{0}/{1}'.format(m['host'], m['p']), m)
+
+
+# scheme form: [ws]url[ws]=[ws]"?ssh://user@host[:port]/path"?  -> https://host[:port]/path
+sshs = re.compile(
+    r'^(?P<prefix>\s*url\s*=\s*)'   # leading whitespace + "url ="
+    r'"?'                           # optional opening quote
+    r'ssh://'                       # explicit scheme, literal
+    r'(?:[A-Za-z0-9._%-]+@)?'       # optional user -> dropped
+    r'(?P<host>[A-Za-z0-9.-]+)'     # host
+    r'(?::(?P<port>\d+))?'          # optional explicit port (kept)
+    r'/'                            # path separator, literal slash
+    r'(?P<p>\S+?)'                  # repository path (no whitespace/quote)
+    r'"?\s*$',                      # optional closing quote + end of line
+    flags=re.M,
+)
+
+
+def rewrite_sshs(m):
+    if m['port']:
+        url = 'https://{0}:{1}/{2}'.format(m['host'], m['port'], m['p'])
+    else:
+        url = 'https://{0}/{1}'.format(m['host'], m['p'])
+    return record(url, m)
+
+
+converted = scp.sub(rewrite_scp, original)
+converted = sshs.sub(rewrite_sshs, converted)
+
+if converted != original:
+    with open(path, 'w') as f:
+        f.write(converted)
+    print('Converting SSH submodule URLs to HTTPS in .gitmodules:')
+    for url in changed:
+        print('  -> {0}'.format(url))
+PYEOF
+}
+
+# Resolve submodules recursively, fetching as little history as possible. Each level's direct children are marked for depth-1 clones before init (git deepens automatically when the pinned commit is not on its default branch tip). It also recurses into every resolved subproject that carries its own .gitmodules, rewriting SSH-style URLs there before resolving them.
+resolve_submodules() {
+  local dir="$1" key name path
+
+  [ -f "$dir/.gitmodules" ] || return 0
+
+  # SSH-style submodule URLs require authentication; rewrite before resolving
+  rewrite_ssh_submodule_urls "$dir"
+
+  while IFS= read -r key; do
+    name=${key#submodule.}
+    name=${name%.path}
+    git -C "$dir" config "submodule.$name.shallow" true \
+      || echo "Warning: could not mark submodule '$name' for shallow clone (fetching full history)"
+  done < <(git config -f "$dir/.gitmodules" --name-only --get-regexp '^submodule\..*\.path$')
+
+  git -C "$dir" submodule update --init || return 1
+
+  while IFS= read -r key; do
+    name=${key#submodule.}
+    name=${name%.path}
+    path=$(git config -f "$dir/.gitmodules" "submodule.$name.path")
+    if [ -d "$dir/$path" ]; then
+      resolve_submodules "$dir/$path" || return 1
+    fi
+  done < <(git config -f "$dir/.gitmodules" --name-only --get-regexp '^submodule\..*\.path$')
+}
+
 download() {
   echo "=== Download: $NAME ==="
   case $SOURCE_TYPE in
@@ -96,11 +197,14 @@ download() {
       if [ ! -d "$SOURCE_DIR" ]; then
         URL=$(yq eval '.plugin.source.url' "$1")
         pushd "$WORK_DIR/build" > /dev/null || return 1
+        # Clone without recursing submodules: SSH-style URLs in .gitmodules must be rewritten first (they would require authentication)
         if [[ "$VERSION" =~ ^[0-9a-f]{40}$ ]]; then
           git clone "$URL" "$NAME-$VERSION" || { popd > /dev/null; return 1; }
           git -C "$NAME-$VERSION" checkout "$VERSION" || { popd > /dev/null; return 1; }
         else
-          git clone --branch "$VERSION" --depth 1 --recurse-submodules "$URL" "$NAME-$VERSION" || { popd > /dev/null; return 1; }
+          git clone --branch "$VERSION" --depth 1 "$URL" "$NAME-$VERSION" || { popd > /dev/null; return 1; }
+          # Resolve submodules shallowly, rewriting SSH-style URLs in .gitmodules first (they would require authentication)
+          resolve_submodules "$SOURCE_DIR" || { rm -rf "$SOURCE_DIR"; popd > /dev/null; return 1; }
         fi
         popd > /dev/null
       fi
