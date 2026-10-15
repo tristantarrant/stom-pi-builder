@@ -1,0 +1,21 @@
+plugin:
+  name: distb
+  type: vst3
+  version: main
+  source:
+    type: git
+    url: https://codeberg.org/yimrakhee/satordist.lv2.git
+  build:
+    - cargo build --release
+    - VST3_ARCH=$(uname -m)-linux && mkdir -p target/bundled/distb.vst3/Contents/$VST3_ARCH && cp target/release/libdistb.so target/bundled/distb.vst3/Contents/$VST3_ARCH/distb.so
+  install:
+    - mkdir -p ${PREFIX_DIR}/lib/vst3
+    - cp -rv target/bundled/distb.vst3 ${PREFIX_DIR}/lib/vst3/
+  data:
+    type: local
+  bundles:
+    - distb.lv2
+  modgui:
+    brand: YimRakhee
+    description: "A modern, aggressive bass distortion plugin"
+  dependencies: []
