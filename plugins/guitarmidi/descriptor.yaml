@@ -3,10 +3,10 @@ plugin:
   version: master
   source:
     type: git
-    url: https://github.com/geraldmwangi/GuitarMidi-LV2.git
+    url: https://github.com/tristantarrant/GuitarMidi-LV2.git
   build:
-    - git submodule update --init
-    - cmake -S . -B bin -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${PREFIX_DIR}
+    - git submodule update --init --recursive
+    - cmake -S . -B bin -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_DEB=OFF -DCMAKE_INSTALL_PREFIX=${PREFIX_DIR}
     - cmake --build bin
   install:
     - cmake --install bin --prefix=${LV2_DIR}

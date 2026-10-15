@@ -3,7 +3,7 @@ plugin:
   version: master
   source:
     type: git
-    url: https://github.com/falkTX/FluidPlug.git
+    url: https://codeberg.org/falkTX/FluidPlug.git
   build:
     - make BASE_OPTS="-O2 -ffast-math -fdata-sections -ffunction-sections"
   install:
