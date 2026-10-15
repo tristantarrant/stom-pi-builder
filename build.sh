@@ -168,12 +168,19 @@ install() {
     local)
       ;;
     null)
+      # Merge prebuilt metadata bundles (modgui assets, presets, ...) from the shared data/ dirs.
+      # --no-clobber: files produced by our own build above are authoritative. A stale copy under
+      # data/ can desync port definitions vs the freshly compiled .so and crash hosts at runtime
+      # (e.g. mod-lv2-data's midifilter.lv2 predates x42 master's "hold"/c2/c4 ports, which made
+      # filter_preproc_midichord dereference NULL config buffers in jackd). Data copies only fill
+      # gaps our build did not produce.
       for PLUGIN in $PLUGINS; do
-        find "$DIR/data" -name "$PLUGIN" -type d -exec cp -rv {} "$LV2_DIR" \;
+        find "$DIR/data" -name "$PLUGIN" -type d -exec cp -rnv {} "$LV2_DIR" \;
       done
       ;;
     *)
-      find "$DIR/data" -name "$DATA_TYPE" -type d -exec cp -rv {} "$LV2_DIR" \;
+      # Same no-clobber rule: never replace files our build just installed.
+      find "$DIR/data" -name "$DATA_TYPE" -type d -exec cp -rvn {} "$LV2_DIR" \;
       ;;
   esac
 }
