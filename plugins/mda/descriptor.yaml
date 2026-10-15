@@ -5,6 +5,8 @@ plugin:
     type: git
     url: https://gitlab.com/drobilla/mda-lv2.git
   build:
+    # MOD metadata + pedalboards reference moddevices.com/plugins/mda/*, but stock mda-lv2 bakes drobilla.net URIs into every binary via URI_PREFIX in mda.lv2/meson.build — leaving all plugins un-instantiable (lilv can't match the descriptor). Rewrite to our namespace; fail loudly if upstream moves/renames that line.
+    - grep -q 'URI_PREFIX="http://drobilla.net/plugins/mda/"' mda.lv2/meson.build && sed -i 's|-DURI_PREFIX="http://drobilla.net/plugins/mda/"|-DURI_PREFIX="http://moddevices.com/plugins/mda/"|' mda.lv2/meson.build || { echo "ERROR, URI_PREFIX line not found in mda.lv2/meson.build; check upstream layout" >&2; exit 1; }
     - meson setup build -Dlv2dir=${LV2_DIR}
     - meson compile -C build
   install:
