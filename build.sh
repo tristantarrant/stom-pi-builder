@@ -785,7 +785,8 @@ compute_build_sha() {
     sha=$(git -C "$SOURCE_DIR" rev-parse HEAD 2>/dev/null)
   fi
   # Hash the descriptor and patches to detect build rule changes
-  local config_hash=$(cat "$PLUGIN_DIR/descriptor.yaml" "$PLUGIN_DIR"/*.patch 2>/dev/null | sha1sum | cut -d' ' -f1)
+  # Include overlay/ so edits to overlaid sources (e.g. Shared_files/PitchSplicer.*) also invalidate the stamp on existing checkouts.
+  local config_hash=$(cat "$PLUGIN_DIR/descriptor.yaml" "$PLUGIN_DIR"/*.patch $(find "$PLUGIN_DIR/overlay" -type f 2>/dev/null) 2>/dev/null | sha1sum | cut -d' ' -f1)
   echo "${sha}-${config_hash}"
 }
 
@@ -820,7 +821,8 @@ check_remote_update() {
   local stored_sha=${stamp%%-*}
   local stored_config=${stamp#*-}
 
-  local current_config=$(cat "$PLUGIN_DIR/descriptor.yaml" "$PLUGIN_DIR"/*.patch 2>/dev/null | sha1sum | cut -d' ' -f1)
+  # Keep in sync with compute_build_sha: overlay/ must be part of the config hash too.
+  local current_config=$(cat "$PLUGIN_DIR/descriptor.yaml" "$PLUGIN_DIR"/*.patch $(find "$PLUGIN_DIR/overlay" -type f 2>/dev/null) 2>/dev/null | sha1sum | cut -d' ' -f1)
   local config_changed=false
   [ "$current_config" != "$stored_config" ] && config_changed=true
 

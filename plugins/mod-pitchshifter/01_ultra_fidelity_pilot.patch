@@ -1,0 +1,410 @@
+diff --git a/Capo/src/Capo.cpp b/Capo/src/Capo.cpp
+index 8116cc6..fc62f88 100644
+--- a/Capo/src/Capo.cpp
++++ b/Capo/src/Capo.cpp
+@@ -2,6 +2,7 @@
+ #include <cmath>
+ #include "PitchShifterClasses.h"
+ #include "GainClass.h"
++#include "PitchSplicer.h"   // "Ultra": correlation-spliced time-domain shifter (no FFT)
+ 
+ /**********************************************************************************************************************************************************/
+ 
+@@ -30,6 +31,11 @@ public:
+         obja = new PSAnalysis(n_samples, nBuffers, wisdomFile);
+         objs = new PSSinthesis(obja, wisdomFile);
+         objg = new GainClass(n_samples);
++        // "Ultra" fidelity engine: sized once for the rate; per-sample and never reallocs after
++        // prepare(), so host block size is irrelevant to it (unlike the STFT objects above).
++        objp = new PitchSplicer();
++        objp->prepare(SampleRate);
++        objp->setEnabled(true);
+ 
+         cont = 0;
+     }
+@@ -38,6 +44,7 @@ public:
+     	delete obja;
+         delete objs;
+         delete objg;
++        delete objp;
+     }
+     void Realloc(uint32_t n_samples, int nBuffers)
+     {
+@@ -60,6 +67,9 @@ public:
+         case 2:
+             bufsize = nBuffersSW(n_samples,FIDELITY2);
+             break;
++        case 3:   // "Ultra": correlation-spliced engine (objp). Nothing to re-size - its state is
++                    // independent of host block size, so the STFT objects are left untouched.
++            return;
+         default:
+             return;
+         }
+@@ -80,6 +90,7 @@ public:
+     PSAnalysis *obja;
+     PSSinthesis *objs;
+     GainClass *objg;
++    PitchSplicer *objp;   // "Ultra" fidelity engine (correlation-spliced, time-domain)
+ 
+     int nBuffers;
+     int cont;
+@@ -151,6 +162,22 @@ void Capo::run(LV2_Handle instance, uint32_t n_samples)
+     int    fidelity = (int)(*(plugin->ports[FIDELITY])+0.5f);
+ 
+     plugin->SetFidelity(fidelity, n_samples);
++    if (fidelity == 3)   // "Ultra": routed before the silence early-out on purpose - even when
++          // the input is silent the ring must keep running so it decays out smoothly instead of hard-cutting to zero.
++    {
++        PitchSplicer::Params p;
++        p.semitones = static_cast<float>(s);   // STEP port: whole semitones (continuous also fine)
++        plugin->objp->setParams(p);            // window stays at the default set in prepare()
++
++        const float* ins[1]  = { in };
++        float*       outs[1] = { out };
++        plugin->objp->process(ins, outs, static_cast<int>(n_samples), 1);   // shifted audio into `out` (pre-gain)
++
++        (plugin->objg)->SetGaindB(gain);
++        (plugin->objg)->SimpleGain(out, out);   // GAIN port applied in-place to the shift result
++        return;
++    }
++
+ 
+     if (InputAbsSum(in, n_samples) == 0)
+     {
+diff --git a/Capo/ttl/Capo.ttl b/Capo/ttl/Capo.ttl
+index 8f580f5..eb9add8 100644
+--- a/Capo/ttl/Capo.ttl
++++ b/Capo/ttl/Capo.ttl
+@@ -43,7 +43,8 @@ All plugins in the MOD-pitchshifter family have an option to set the fidelity of
+ 
+ *The Lo-Fi setting is reminiscent of bit-crushed sounds, if you are looking for those synthesizer-like basslines, or dirty octave-up sounds, this is your setting!
+ *The Hi-Fi setting is great if you are looking to emulate (for example) something like a 12-string guitar, be sure to mind that CPU-meter in the bottom-right of the screen though! 
+-*The settings in between are created to let you make the perfect trade-off between quality and performance. 
++*The settings in between are created to let you make the perfect trade-off between quality and performance.
++*The Ultra setting uses a correlation-spliced time-domain engine with no FFT: for most material it costs about as much - or less than - Lo-Fi. 
+ 
+ A hint for making the right decision: the more you shift the pitch up, the higher you will need to set the Fidelity to get a clear sound. 
+ """;
+@@ -93,11 +94,12 @@ lv2:port
+     lv2:shortName "Fidelity";
+     lv2:default 1;
+     lv2:minimum 0;
+-    lv2:maximum 2;
++    lv2:maximum 3;
+     lv2:portProperty lv2:integer, lv2:enumeration;
+     lv2:scalePoint [rdfs:label "Lo-Fi"; rdf:value 0];
+     lv2:scalePoint [rdfs:label "Normal"; rdf:value 1];
+     lv2:scalePoint [rdfs:label "Hi-Fi"; rdf:value 2];
++    lv2:scalePoint [rdfs:label "Ultra"; rdf:value 3];
+ ];
+ 
+ modgui:gui [
+diff --git a/Drop/src/Drop.cpp b/Drop/src/Drop.cpp
+index a8dbb7c..b58b65a 100644
+--- a/Drop/src/Drop.cpp
++++ b/Drop/src/Drop.cpp
+@@ -2,6 +2,7 @@
+ #include <cmath>
+ #include "PitchShifterClasses.h"
+ #include "GainClass.h"
++#include "PitchSplicer.h"   // "Ultra": correlation-spliced time-domain shifter (no FFT)
+ 
+ /**********************************************************************************************************************************************************/
+ 
+@@ -30,6 +31,11 @@ public:
+         obja = new PSAnalysis(n_samples, nBuffers, wisdomFile);
+         objs = new PSSinthesis(obja, wisdomFile);
+         objg = new GainClass(n_samples);
++        // "Ultra" fidelity engine: sized once for the rate; per-sample and never reallocs after
++        // prepare(), so host block size is irrelevant to it (unlike the STFT objects above).
++        objp = new PitchSplicer();
++        objp->prepare(SampleRate);
++        objp->setEnabled(true);
+ 
+         cont = 0;
+     }
+@@ -38,6 +44,7 @@ public:
+     	delete obja;
+         delete objs;
+         delete objg;
++        delete objp;
+     }
+     void Realloc(uint32_t n_samples, int nBuffers)
+     {
+@@ -60,6 +67,9 @@ public:
+         case 2:
+             bufsize = nBuffersSW(n_samples,FIDELITY2);
+             break;
++        case 3:   // "Ultra": correlation-spliced engine (objp). Nothing to re-size - its state is
++                    // independent of host block size, so the STFT objects are left untouched.
++            return;
+         default:
+             return;
+         }
+@@ -80,6 +90,7 @@ public:
+     PSAnalysis *obja;
+     PSSinthesis *objs;
+     GainClass *objg;
++    PitchSplicer *objp;   // "Ultra" fidelity engine (correlation-spliced, time-domain)
+ 
+     int nBuffers;
+     int cont;
+@@ -152,6 +163,22 @@ void Drop::run(LV2_Handle instance, uint32_t n_samples)
+     int    fidelity = (int)(*(plugin->ports[FIDELITY])+0.5f);
+ 
+     plugin->SetFidelity(fidelity, n_samples);
++    if (fidelity == 3)   // "Ultra": routed before the silence early-out on purpose - even when
++          // the input is silent the ring must keep running so it decays out smoothly instead of hard-cutting to zero.
++    {
++        PitchSplicer::Params p;
++        p.semitones = static_cast<float>(s);   // STEP port: whole semitones (continuous also fine)
++        plugin->objp->setParams(p);            // window stays at the default set in prepare()
++
++        const float* ins[1]  = { in };
++        float*       outs[1] = { out };
++        plugin->objp->process(ins, outs, static_cast<int>(n_samples), 1);   // shifted audio into `out` (pre-gain)
++
++        (plugin->objg)->SetGaindB(gain);
++        (plugin->objg)->SimpleGain(out, out);   // GAIN port applied in-place to the shift result
++        return;
++    }
++
+ 
+     if (InputAbsSum(in, n_samples) == 0)
+     {
+diff --git a/Drop/ttl/Drop.ttl b/Drop/ttl/Drop.ttl
+index 2bd1f46..0ff79ab 100644
+--- a/Drop/ttl/Drop.ttl
++++ b/Drop/ttl/Drop.ttl
+@@ -43,7 +43,8 @@ All plugins in the MOD-pitchshifter family have an option to set the fidelity of
+ 
+ *The Lo-Fi setting is reminiscent of bit-crushed sounds, if you are looking for those synthesizer-like basslines, or dirty octave-up sounds, this is your setting!
+ *The Hi-Fi setting is great if you are looking to emulate (for example) something like a 12-string guitar, be sure to mind that CPU-meter in the bottom-right of the screen though! 
+-*The settings in between are created to let you make the perfect trade-off between quality and performance. 
++*The settings in between are created to let you make the perfect trade-off between quality and performance.
++*The Ultra setting uses a correlation-spliced time-domain engine with no FFT: for most material it costs about as much - or less than - Lo-Fi. 
+ 
+ A hint for making the right decision: the more you shift the pitch up, the higher you will need to set the Fidelity to get a clear sound. 
+ """;
+@@ -93,11 +94,12 @@ lv2:port
+     lv2:shortName "Fidelity";
+     lv2:default 1;
+     lv2:minimum 0;
+-    lv2:maximum 2;
++    lv2:maximum 3;
+     lv2:portProperty lv2:integer, lv2:enumeration;
+     lv2:scalePoint [rdfs:label "Lo-Fi"; rdf:value 0];
+     lv2:scalePoint [rdfs:label "Normal"; rdf:value 1];
+     lv2:scalePoint [rdfs:label "Hi-Fi"; rdf:value 2];
++    lv2:scalePoint [rdfs:label "Ultra"; rdf:value 3];
+ ];
+ 
+ modgui:gui [
+diff --git a/SuperCapo/src/SuperCapo.cpp b/SuperCapo/src/SuperCapo.cpp
+index 9482ab0..d7acf18 100644
+--- a/SuperCapo/src/SuperCapo.cpp
++++ b/SuperCapo/src/SuperCapo.cpp
+@@ -2,6 +2,7 @@
+ #include <cmath>
+ #include "PitchShifterClasses.h"
+ #include "GainClass.h"
++#include "PitchSplicer.h"   // "Ultra": correlation-spliced time-domain shifter (no FFT)
+ 
+ /**********************************************************************************************************************************************************/
+ 
+@@ -30,6 +31,11 @@ public:
+         obja = new PSAnalysis(n_samples, nBuffers, wisdomFile);
+         objs = new PSSinthesis(obja, wisdomFile);
+         objg = new GainClass(n_samples);
++        // "Ultra" fidelity engine: sized once for the rate; per-sample and never reallocs after
++        // prepare(), so host block size is irrelevant to it (unlike the STFT objects above).
++        objp = new PitchSplicer();
++        objp->prepare(SampleRate);
++        objp->setEnabled(true);
+ 
+         cont = 0;
+     }
+@@ -38,6 +44,7 @@ public:
+     	delete obja;
+         delete objs;
+         delete objg;
++        delete objp;
+     }
+     void Realloc(uint32_t n_samples, int nBuffers)
+     {
+@@ -60,6 +67,9 @@ public:
+         case 2:
+             bufsize = nBuffersSW(n_samples,FIDELITY2);
+             break;
++        case 3:   // "Ultra": correlation-spliced engine (objp). Nothing to re-size - its state is
++                    // independent of host block size, so the STFT objects are left untouched.
++            return;
+         default:
+             return;
+         }
+@@ -80,6 +90,7 @@ public:
+     PSAnalysis *obja;
+     PSSinthesis *objs;
+     GainClass *objg;
++    PitchSplicer *objp;   // "Ultra" fidelity engine (correlation-spliced, time-domain)
+ 
+     int nBuffers;
+     int cont;
+@@ -152,6 +163,22 @@ void SuperCapo::run(LV2_Handle instance, uint32_t n_samples)
+     int    fidelity = (int)(*(plugin->ports[FIDELITY])+0.5f);
+ 
+     plugin->SetFidelity(fidelity, n_samples);
++    if (fidelity == 3)   // "Ultra": routed before the silence early-out on purpose - even when
++          // the input is silent the ring must keep running so it decays out smoothly instead of hard-cutting to zero.
++    {
++        PitchSplicer::Params p;
++        p.semitones = static_cast<float>(s);   // STEP port: whole semitones (continuous also fine)
++        plugin->objp->setParams(p);            // window stays at the default set in prepare()
++
++        const float* ins[1]  = { in };
++        float*       outs[1] = { out };
++        plugin->objp->process(ins, outs, static_cast<int>(n_samples), 1);   // shifted audio into `out` (pre-gain)
++
++        (plugin->objg)->SetGaindB(gain);
++        (plugin->objg)->SimpleGain(out, out);   // GAIN port applied in-place to the shift result
++        return;
++    }
++
+ 
+     if (InputAbsSum(in, n_samples) == 0)
+     {
+diff --git a/SuperCapo/ttl/SuperCapo.ttl b/SuperCapo/ttl/SuperCapo.ttl
+index 75dd704..a758f93 100644
+--- a/SuperCapo/ttl/SuperCapo.ttl
++++ b/SuperCapo/ttl/SuperCapo.ttl
+@@ -40,7 +40,8 @@ All plugins in the MOD-pitchshifter family have an option to set the fidelity of
+ 
+ *The Lo-Fi setting is reminiscent of bit-crushed sounds, if you are looking for those synthesizer-like basslines, or dirty octave-up sounds, this is your setting!
+ *The Hi-Fi setting is great if you are looking to emulate (for example) something like a 12-string guitar, be sure to mind that CPU-meter in the bottom-right of the screen though! 
+-*The settings in between are created to let you make the perfect trade-off between quality and performance. 
++*The settings in between are created to let you make the perfect trade-off between quality and performance.
++*The Ultra setting uses a correlation-spliced time-domain engine with no FFT: for most material it costs about as much - or less than - Lo-Fi. 
+ 
+ A hint for making the right decision: the more you shift the pitch up, the higher you will need to set the Fidelity to get a clear sound. 
+ """;
+@@ -90,11 +91,12 @@ lv2:port
+     lv2:shortName "Fidelity";
+     lv2:default 1;
+     lv2:minimum 0;
+-    lv2:maximum 2;
++    lv2:maximum 3;
+     lv2:portProperty lv2:integer, lv2:enumeration;
+     lv2:scalePoint [rdfs:label "Lo-Fi"; rdf:value 0];
+     lv2:scalePoint [rdfs:label "Normal"; rdf:value 1];
+     lv2:scalePoint [rdfs:label "Hi-Fi"; rdf:value 2];
++    lv2:scalePoint [rdfs:label "Ultra"; rdf:value 3];
+ ];
+ 
+ modgui:gui [
+diff --git a/SuperWhammy/src/SuperWhammy.cpp b/SuperWhammy/src/SuperWhammy.cpp
+index 6ad9cb4..d2f35b1 100644
+--- a/SuperWhammy/src/SuperWhammy.cpp
++++ b/SuperWhammy/src/SuperWhammy.cpp
+@@ -2,6 +2,7 @@
+ #include <cmath>
+ #include "PitchShifterClasses.h"
+ #include "GainClass.h"
++#include "PitchSplicer.h"   // "Ultra": correlation-spliced time-domain shifter (no FFT)
+ 
+ /**********************************************************************************************************************************************************/
+ 
+@@ -34,6 +35,11 @@ public:
+         obja = new PSAnalysis(n_samples, nBuffers, wisdomFile);
+         objs = new PSSinthesis(obja, wisdomFile);
+         objg = new GainClass(n_samples);
++        // "Ultra" fidelity engine: sized once for the rate; per-sample and never reallocs after
++        // prepare(), so host block size is irrelevant to it (unlike the STFT objects above).
++        objp = new PitchSplicer();
++        objp->prepare(SampleRate);
++        objp->setEnabled(true);
+ 
+         cont = 0;
+     }
+@@ -42,6 +48,7 @@ public:
+     	delete obja;
+         delete objs;
+         delete objg;
++        delete objp;
+     }
+     void Realloc(uint32_t n_samples, int nBuffers)
+     {
+@@ -67,6 +74,9 @@ public:
+         case 3:
+             bufsize = nBuffersSW(n_samples,FIDELITY3);
+             break;
++        case 4:   // "Ultra": correlation-spliced engine (objp). Nothing to re-size - its state is
++                    // independent of host block size, so the STFT objects are left untouched.
++            return;
+         default:
+             return;
+         }
+@@ -87,6 +97,7 @@ public:
+     PSAnalysis *obja;
+     PSSinthesis *objs;
+     GainClass *objg;
++    PitchSplicer *objp;   // "Ultra" fidelity engine (correlation-spliced, time-domain)
+ 
+     int nBuffers;
+     int cont;
+@@ -162,6 +173,27 @@ void SuperWhammy::run(LV2_Handle instance, uint32_t n_samples)
+     int    fidelity = (int)(*(plugin->ports[FIDELITY])+0.5f);
+ 
+     plugin->SetFidelity(fidelity, n_samples);
++    if (fidelity == 4)   // "Ultra": routed before the silence early-out so a silent input decays out smoothly instead of hard-cutting to zero.
++    {
++        double buffer_duration = n_samples/((double) plugin->SampleRate);
++        double alpha = std::pow(0.01, buffer_duration/SMOOTH_DURATION);
++        plugin->current_s = alpha*plugin->current_s + (1-alpha)*s;
++
++        double s_ = a + plugin->current_s*(b-a);   // same sweep interpolation the STFT path feeds to Sinthesis()
++        PitchSplicer::Params p;
++        p.semitones = static_cast<float>(s_);      // continuous value, exactly what Sinthesis(s_) would receive
++        plugin->objp->setParams(p);                // window stays at the default set in prepare()
++
++        const float* ins[1]  = { in };
++        float*       outs[1] = { out };
++        plugin->objp->process(ins, outs, static_cast<int>(n_samples), 1);   // shifted audio into `out` (pre-gain)
++
++        (plugin->objg)->SetGaindB(gain);
++        (plugin->objg)->SimpleGain(out, out);      // GAIN port on the shift result only...
++        if (c == 1) for (uint32_t i = 0; i<n_samples; i++) out[i] += in[i];   // ...and CLEAN adds dry at full level afterwards
++        return;
++    }
++
+ 
+     if (InputAbsSum(in, n_samples) == 0)
+     {
+diff --git a/SuperWhammy/ttl/SuperWhammy.ttl b/SuperWhammy/ttl/SuperWhammy.ttl
+index 2dcfc7f..3f61faf 100644
+--- a/SuperWhammy/ttl/SuperWhammy.ttl
++++ b/SuperWhammy/ttl/SuperWhammy.ttl
+@@ -44,7 +44,8 @@ All plugins in the MOD-pitchshifter family have an option to set the fidelity of
+ 
+ *The Lo-Fi setting is reminiscent of bit-crushed sounds, if you are looking for those synthesizer-like basslines, or dirty octave-up sounds, this is your setting!
+ *The Hi-Fi setting is great if you are looking to emulate (for example) something like a 12-string guitar, be sure to mind that CPU-meter in the bottom-right of the screen though! 
+-*The settings in between are created to let you make the perfect trade-off between quality and performance. 
++*The settings in between are created to let you make the perfect trade-off between quality and performance.
++*The Ultra setting uses a correlation-spliced time-domain engine with no FFT: for most material it costs about as much - or less than - Lo-Fi. 
+ 
+ A hint for making the right decision: the more you shift the pitch up, the higher you will need to set the Fidelity to get a clear sound.
+ 
+@@ -130,12 +131,13 @@ lv2:port
+     lv2:shortName "Fidelity";
+     lv2:default 1;
+     lv2:minimum 0;
+-    lv2:maximum 3;
++    lv2:maximum 4;
+     lv2:portProperty lv2:integer, lv2:enumeration;
+     lv2:scalePoint [rdfs:label "Lo-Fi"; rdf:value 0];
+     lv2:scalePoint [rdfs:label "Medium"; rdf:value 1];
+     lv2:scalePoint [rdfs:label "High"; rdf:value 2];
+     lv2:scalePoint [rdfs:label "Hi-Fi"; rdf:value 3];
++    lv2:scalePoint [rdfs:label "Ultra"; rdf:value 4];
+ ];
+ 
+ modgui:gui [
