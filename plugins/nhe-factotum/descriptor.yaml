@@ -1,0 +1,13 @@
+plugin:
+  name: nhe-factotum
+  version: main
+  source:
+    type: git
+    url: https://github.com/Kiwooky/NHE-Factotum.git
+  build:
+    - make
+  install:
+    - make install DESTDIR=${PREFIX_DIR} PREFIX=/
+  bundles:
+    - nhe-factotum.lv2
+  dependencies: []

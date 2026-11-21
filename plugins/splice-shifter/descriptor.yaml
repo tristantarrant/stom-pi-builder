@@ -1,0 +1,15 @@
+plugin:
+  name: splice-shifter
+  version: main
+  source:
+    type: git
+    url: https://github.com/mod-audio/mod-splice-shifter.git
+  build:
+    - make NOOPT=true
+  install:
+    - make install NOOPT=true INSTALL_PATH=${LV2_DIR}
+  bundles:
+    - mod-spliceshifter.lv2
+    - mod-spliceshifter-fix1.lv2
+    - mod-spliceshifter-fix2.lv2
+  dependencies: []

@@ -1,0 +1,13 @@
+plugin:
+  name: nhe-multiplay2020
+  version: main
+  source:
+    type: git
+    url: https://github.com/Kiwooky/NHE-MultiPlay2020.git
+  build:
+    - make
+  install:
+    - make install DESTDIR=${PREFIX_DIR} PREFIX=/
+  bundles:
+    - nhe-multiplay.lv2
+  dependencies: []

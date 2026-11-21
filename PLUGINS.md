@@ -1,6 +1,6 @@
 # Plugins
 
-166 plugins across 7 build systems. All built natively on aarch64 (Pi 5).
+173 plugins across 7 build systems. All built natively on aarch64 (Pi 5).
 
 ## Overdrives & Distortion
 
@@ -56,6 +56,8 @@
 | gxvstb | Tone Bender variant | Make | 1 |
 | metaltone | Metal Tone distortion pedal | Make | 1 |
 | mod-distortion | MOD distortion plugins | Make | 2 |
+| nhe-factotum | Octave fuzz drive | Make | 1 |
+| octobass | OctoBASS distortion (Neural Amp Modeler A2, CMake monorepo) | CMake | 1 |
 | chow-centaur | Klon Centaur transparent overdrive (JUCE, needs patches) | CMake | 1 |
 
 ## Amp Simulators & Cabinets
@@ -84,6 +86,8 @@
 | dragonfly-reverb | Hall, room, plate, early reflections reverb | Make | 4 |
 | tal-reverb | TAL Reverb (plate reverb, DISTRHO port) | Meson | 0 |
 | mod-convolution-loader | Convolution reverb with IR loading | Make | 1 |
+| nhe-ouraverb | Outdoor reverb/echo (mono + stereo) | Make | 2 |
+| nhe-taj-mahal | Chorused hall reverb modelled on the "Taj Mahal" preset of a 1988 rack unit (mono + stereo) | Make | 2 |
 | x42-zconvo | Zero-latency convolution processor | Make | 1 |
 
 ## Delay
@@ -97,6 +101,10 @@
 | dm-reverse | Reverse delay (Rust) | Rust | 1 |
 | dm-spaceecho | Roland Space Echo emulation (Rust) | Rust | 1 |
 | dm-timewarp | Time-warping delay (Rust) | Rust | 1 |
+| echomatica | 1960s Italian multi-tap tape/drum echo | Make/DPF | 1 |
+| nhe-can-abyss | Oil can delay (mono + stereo) | Make | 2 |
+| nhe-ec280 | Early BBD echo/reverb | Make | 1 |
+| nhe-multiplay2020 | Experimental delay/looper (Digitech Multiplay 20/20) | Make | 1 |
 | regrader | Degrader/bitcrusher delay (DPF) | Make/DPF | 1 |
 | wstd-dlay | Wasted Audio delay (Pure Data via hvcc) | Make/DPF | 1 |
 
@@ -110,7 +118,9 @@
 | gxslowgear | Slow gear (auto swell) | Make | 1 |
 | gxswitchlesswah | Switchless auto-wah | Make | 1 |
 | gxtimray | Tim Ray tremolo | Make | 1 |
+| nhe-trance-atlantic | Envelope pitch shifter & ocean reverb | Make | 1 |
 | mod-pitchshifter | Pitch shifter collection | Make | 8 |
+| splice-shifter | Low-latency pitch shifter, TONE3000 engine port (3 variants) | Make | 3 |
 | stone-phaser | Analog phaser emulation | Make | 2 |
 | wolf-shaper | Waveshaper with spline editor | Make | 1 |
 
@@ -136,6 +146,7 @@
 | Plugin | Description | Build | Bundles |
 |---|---|---|---|
 | chow-analogtapemodel | Analog tape emulation (JUCE, needs patches) | CMake | 1 |
+| nhe-tapestry | Tape format simulator (mono + stereo) | Make | 2 |
 
 ## Synthesizers
 
@@ -237,7 +248,7 @@
 | rezonateur | Resonator bank effect | Make | 2 |
 | rkr | Rakarrack effects ported to LV2 | CMake | 1 |
 | shiro | SHIRO plugins (larynx, pitchshifter, shiroverb, wah) | Make | 4 |
-| srmourasilva-plugins | Utility plugins (switch, toggle) | Make | 2 |
+| srmourasilva-plugins | Utility plugins (switch, toggle) | Make | 4 |
 | zam | ZamAudio plugins (compressor, EQ, delay, etc.) | Make | 18 |
 
 ## Other

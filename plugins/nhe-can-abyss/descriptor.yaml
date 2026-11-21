@@ -1,0 +1,16 @@
+plugin:
+  name: nhe-can-abyss
+  version: main
+  source:
+    type: git
+    url: https://github.com/Kiwooky/NHE-Can-Abyss.git
+  build:
+    - make
+    - make NAME=nhe-can-abyss-stereo
+  install:
+    - make install DESTDIR=${PREFIX_DIR} PREFIX=/
+    - make NAME=nhe-can-abyss-stereo install DESTDIR=${PREFIX_DIR} PREFIX=/
+  bundles:
+    - nhe-can-abyss.lv2
+    - nhe-can-abyss-stereo.lv2
+  dependencies: []

@@ -1,0 +1,14 @@
+plugin:
+  name: echomatica
+  version: main
+  source:
+    type: git
+    url: https://github.com/Mondomod/Echomatica.git
+  build:
+    - chmod +x dpf/utils/generate-ttl.sh
+    - make
+  install:
+    - cp -a bin/Echomatica.lv2 ${LV2_DIR}/
+  bundles:
+    - Echomatica.lv2
+  dependencies: []

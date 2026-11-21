@@ -1,0 +1,13 @@
+plugin:
+  name: nhe-ec280
+  version: main
+  source:
+    type: git
+    url: https://github.com/Kiwooky/NHE-EC280.git
+  build:
+    - make
+  install:
+    - make install DESTDIR=${PREFIX_DIR} PREFIX=/
+  bundles:
+    - nhe-ec280.lv2
+  dependencies: []

@@ -1,0 +1,13 @@
+plugin:
+  name: nhe-trance-atlantic
+  version: main
+  source:
+    type: git
+    url: https://github.com/Kiwooky/NHE-Trance-Atlantic.git
+  build:
+    - make
+  install:
+    - make install DESTDIR=${PREFIX_DIR} PREFIX=/
+  bundles:
+    - nhe-trance-atlantic.lv2
+  dependencies: []

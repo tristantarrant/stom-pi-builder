@@ -1,0 +1,16 @@
+plugin:
+  name: nhe-ouraverb
+  version: main
+  source:
+    type: git
+    url: https://github.com/Kiwooky/NHE-Ouraverb.git
+  build:
+    - make
+    - make NAME=nhe-ouraverb-stereo
+  install:
+    - make install DESTDIR=${PREFIX_DIR} PREFIX=/
+    - make NAME=nhe-ouraverb-stereo install DESTDIR=${PREFIX_DIR} PREFIX=/
+  bundles:
+    - nhe-ouraverb.lv2
+    - nhe-ouraverb-stereo.lv2
+  dependencies: []

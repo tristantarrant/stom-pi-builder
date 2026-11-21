@@ -1,0 +1,18 @@
+plugin:
+  name: nhe-taj-mahal
+  version: main
+  source:
+    type: git
+    url: https://github.com/Kiwooky/NHE-Taj-Mahal.git
+  build:
+    - make
+    - make NAME=nhe-taj-mahal-stereo
+  install:
+    - make install DESTDIR=${PREFIX_DIR} PREFIX=/
+    - make NAME=nhe-taj-mahal-stereo install DESTDIR=${PREFIX_DIR} PREFIX=/
+    # Drop prebuilt macOS dylibs committed under the repo's bin/ (leaked into the mono bundle by the Makefile's bundle merge)
+    - rm -f ${LV2_DIR}/nhe-taj-mahal.lv2/nhe-taj-mahal_dsp.dylib ${LV2_DIR}/nhe-taj-mahal-stereo.lv2/nhe-taj-mahal-stereo_dsp.dylib
+  bundles:
+    - nhe-taj-mahal.lv2
+    - nhe-taj-mahal-stereo.lv2
+  dependencies: []

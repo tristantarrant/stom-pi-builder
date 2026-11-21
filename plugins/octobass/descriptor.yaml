@@ -1,0 +1,14 @@
+plugin:
+  name: octobass
+  version: main
+  source:
+    type: git
+    url: https://github.com/gianni-cappelletti/October-Production-Co.git
+  build:
+    - cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DBUILD_OCTOBASS_LV2=ON -DBUILD_OCTOBIR=OFF -DBUILD_OCTOBIR_JUCE=OFF -DBUILD_OCTOBIR_VCV=OFF -DBUILD_OCTOBASS_JUCE=OFF
+    - cmake --build build -- -j$(nproc)
+  install:
+    - cp -r build/plugins/octobass/lv2/OctoBASS.lv2 ${LV2_DIR}/
+  bundles:
+    - OctoBASS.lv2
+  dependencies: []

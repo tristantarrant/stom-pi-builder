@@ -1,6 +1,6 @@
 plugin:
   name: srmourasilva-plugins
-  version: master
+  version: main
   source:
     type: git
     url: https://github.com/SrMouraSilva/plugins-lv2.git
@@ -10,5 +10,7 @@ plugin:
     - make -C plugins install PREFIX=${PREFIX_DIR}
   bundles:
     - gossiper.lv2
+    - hept7-switch.lv2
+    - kill-switch.lv2
     - tetr4-switch.lv2
   dependencies: []

@@ -1,0 +1,16 @@
+plugin:
+  name: nhe-tapestry
+  version: main
+  source:
+    type: git
+    url: https://github.com/Kiwooky/NHE-Tapestry.git
+  build:
+    - make
+    - make NAME=nhe-tapestry-stereo
+  install:
+    - make install DESTDIR=${PREFIX_DIR} PREFIX=/
+    - make NAME=nhe-tapestry-stereo install DESTDIR=${PREFIX_DIR} PREFIX=/
+  bundles:
+    - nhe-tapestry.lv2
+    - nhe-tapestry-stereo.lv2
+  dependencies: []
