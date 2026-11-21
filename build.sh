@@ -867,20 +867,60 @@ CHECK_UPDATES=false
 
 INTERACTIVE=false
 
+usage() {
+  cat <<'EOF'
+Usage: ./build.sh [OPTION]... [PLUGIN]...
+
+Build LV2 (and VST3) plugins from the descriptors in plugins/<PLUGIN>/descriptor.yaml.
+Each PLUGIN is a subdirectory name of plugins/ (see PLUGINS.md for the catalogue).
+With no plugins given, nothing is built; combine with --check-updates to scan the
+whole catalogue instead.
+
+Options:
+  -c, --clean        remove the plugin's build/download state before building
+  -u, --check-updates  check pinned source refs against the remote (git); with no
+                     plugins given, checks all plugins; exits after the summary
+  -i, --interactive  select plugins to build in a whiptail checklist
+  -h, --help         show this help and exit
+
+Examples:
+  ./build.sh nhe-taj-mahal                 build one plugin
+  ./build.sh nhe-taj-mahal chow-centaur    build several
+  ./build.sh --clean octobass              rebuild from scratch
+  ./build.sh --check-updates               which plugins have new upstream commits
+  ./build.sh --check-updates dm-timewarp    check a single plugin
+  ./build.sh -i                            interactive selection
+
+Notes:
+  * Builds run natively: on the Pi you get aarch64, on a workstation x86_64.
+  * Builds are idempotent: unchanged descriptor + source skips download, build
+    and install ("=== Up to date: ... (skipping) ===").
+  * Work areas: work/build (source clones), work/target (staged FHS tree),
+    work/packages (per-bundle tarballs), work/download (http sources).
+  * Requires: bash, git, yq, a C/C++ toolchain; whiptail only for -i/--interactive.
+    Per-plugin system dependencies (dependencies: in the descriptor) are checked
+    before each build.
+EOF
+}
+
 while true
 do
   case "$1" in
-    --clean)
+    --clean|-c)
       CLEAN=true
       shift
       ;;
-    --check-updates)
+    --check-updates|-u)
       CHECK_UPDATES=true
       shift
       ;;
     --interactive|-i)
       INTERACTIVE=true
       shift
+      ;;
+    --help|-h)
+      usage
+      exit 0
       ;;
     *)
       break;;
