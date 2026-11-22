@@ -6,6 +6,7 @@
 
 | Plugin | Description | Build | Bundles |
 |---|---|---|---|
+| bbpreamp | Xotic BB Preamp overdrive: 1.5 / AT / Bass / Comp / MB variants (Faust DSP) | Make | 1 |
 | bluesbreaker | Marshall Bluesbreaker overdrive emulation | Make | 1 |
 | collisiondrive | CollisionDrive overdrive pedal | Make | 1 |
 | dm-ds1 | Boss DS-1 distortion (Rust) | Rust | 1 |
