@@ -1,0 +1,18 @@
+plugin:
+  name: bluesfuse
+  version: master
+  source:
+    type: git
+    url: /home/tst/Work/Dataforte/stom-pi/stom-pi-bluesfuse
+  build:
+    - make
+  install:
+    - make install INSTALL_DIR=${LV2_DIR}
+  bundles:
+    - bluesfuse.lv2
+  modgui:
+    brand: Rustyfoot
+    color: blue
+    knob: silver
+    description: "BluesFuse Preamp: Faust-based emulation of the Xotic BB Preamp overdrive and its 1.5 / AT / Bass / Custom Shop Comp / MB variants: TS-style diode clipper, dual-gang volume and 2-band Baxandall EQ (GAIN / VOLUME / TREBLE / BASS / MID / COMP / MODEL)"
+  dependencies: []
