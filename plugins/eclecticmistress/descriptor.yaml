@@ -1,0 +1,18 @@
+plugin:
+  name: eclecticmistress
+  version: master
+  source:
+    type: git
+    url: /home/tst/Work/Dataforte/stom-pi/stom-pi-eclecticmistress
+  build:
+    - make
+  install:
+    - make install INSTALL_DIR=${LV2_DIR}
+  bundles:
+    - eclecticmistress.lv2
+  modgui:
+    brand: Rustyfoot
+    color: green
+    knob: silver
+    description: "Faust-based emulation of the Electro-Harmonix Electric Mistress flanger: swept BBD comb filter with COLOR-pot feedback (RATE / RANGE / COLOR / MIX)"
+  dependencies: []
