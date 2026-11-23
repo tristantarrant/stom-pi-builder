@@ -14,5 +14,5 @@ plugin:
     brand: Rustyfoot
     color: green
     knob: silver
-    description: "Faust-based emulation of the Electro-Harmonix Electric Mistress flanger: swept BBD comb filter with COLOR-pot feedback (RATE / RANGE / COLOR / MIX)"
+    description: "Faust-based emulation of the Electro-Harmonix Electric Mistress V2 flanger: BBD comb swept 1.2-10.7 ms with COLOR feedback, pot-position controls and documented Gilmour / Summers / Leslie presets (RATE / RANGE / COLOR / MIX / MATRIX)"
   dependencies: []
