@@ -116,6 +116,7 @@
 | dm-vibrato | Vibrato effect (Rust) | Rust | 1 |
 | dm-whammy | Digitech Whammy pitch shifter (Rust) | Rust | 1 |
 | eclecticmistress | Electro-Harmonix Electric Mistress flanger (Faust DSP) | Make | 1 |
+| coralensemble | BOSS CE-2 / CE-2B chorus emulation (Faust DSP) | Make | 1 |
 | gxquack | Auto-wah/envelope filter | Make | 1 |
 | gxslowgear | Slow gear (auto swell) | Make | 1 |
 | gxswitchlesswah | Switchless auto-wah | Make | 1 |

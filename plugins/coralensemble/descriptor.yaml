@@ -1,0 +1,13 @@
+plugin:
+  name: coralensemble
+  version: master
+  source:
+    type: git
+    url: https://github.com/tristantarrant/coral-ensemble.git
+  build:
+    - make
+  install:
+    - make install INSTALL_DIR=${LV2_DIR}
+  bundles:
+    - coralensemble.lv2
+  dependencies: []
