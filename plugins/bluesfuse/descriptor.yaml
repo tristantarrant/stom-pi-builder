@@ -3,7 +3,7 @@ plugin:
   version: master
   source:
     type: git
-    url: /home/tst/Work/Dataforte/stom-pi/stom-pi-bluesfuse
+    url: https://github.com/tristantarrant/bluesfuse-preamp.git
   build:
     - make
   install:
