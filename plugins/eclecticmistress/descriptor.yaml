@@ -10,9 +10,4 @@ plugin:
     - make install INSTALL_DIR=${LV2_DIR}
   bundles:
     - eclecticmistress.lv2
-  modgui:
-    brand: Rustyfoot
-    color: green
-    knob: silver
-    description: "Faust-based emulation of the Electro-Harmonix Electric Mistress V2 flanger: BBD comb swept 1.2-10.7 ms with COLOR feedback, pot-position controls and documented Gilmour / Summers / Leslie presets (RATE / RANGE / COLOR / MIX / MATRIX)"
   dependencies: []
