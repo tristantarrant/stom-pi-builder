@@ -1,6 +1,6 @@
 # Plugins
 
-174 plugins across 7 build systems. All built natively on aarch64 (Pi 5).
+175 plugins across 7 build systems. All built natively on aarch64 (Pi 5).
 
 ## Overdrives & Distortion
 
@@ -143,6 +143,7 @@
 | Plugin | Description | Build | Bundles |
 |---|---|---|---|
 | harmonicexciter | Harmonic exciter/enhancer | Make | 1 |
+| pickupweaver | Guitar pickup, hollow-body and tone-pot simulation (C++ SIMD DSP) | Make | 1 |
 | x42-fil4 | 4-band parametric EQ | Make | 1 |
 
 ## Tape & Analog Simulation
