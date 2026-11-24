@@ -1,6 +1,6 @@
 plugin:
   name: pickupweaver
-  version: master
+  version: main
   source:
     type: git
     url: https://github.com/tristantarrant/pickup-weaver.git

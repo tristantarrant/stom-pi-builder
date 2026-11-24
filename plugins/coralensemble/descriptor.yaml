@@ -1,6 +1,6 @@
 plugin:
   name: coralensemble
-  version: master
+  version: main
   source:
     type: git
     url: https://github.com/tristantarrant/coral-ensemble.git

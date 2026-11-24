@@ -1,6 +1,6 @@
 plugin:
   name: ironlung
-  version: master
+  version: main
   source:
     type: git
     url: https://github.com/tristantarrant/iron-lung.git
