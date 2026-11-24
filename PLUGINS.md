@@ -1,6 +1,6 @@
 # Plugins
 
-173 plugins across 7 build systems. All built natively on aarch64 (Pi 5).
+174 plugins across 7 build systems. All built natively on aarch64 (Pi 5).
 
 ## Overdrives & Distortion
 
@@ -133,6 +133,7 @@
 |---|---|---|---|
 | abgate | Noise gate | Make | 1 |
 | dm-stutter | Stutter/gate effect (Rust) | Rust | 1 |
+| ironlung | 1986 VCA compression sustainer (BOSS CS-3, Faust DSP) | Make | 1 |
 | master_me | Automatic mastering processor | Make | 2 |
 | mod-volume | Volume control and gain utility | Make | 2 |
 | x42-fat1 | Auto-tuner (analog-style) | Make | 1 |

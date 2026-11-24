@@ -1,0 +1,13 @@
+plugin:
+  name: ironlung
+  version: master
+  source:
+    type: git
+    url: https://github.com/tristantarrant/iron-lung.git
+  build:
+    - make
+  install:
+    - make install INSTALL_DIR=${LV2_DIR}
+  bundles:
+    - ironlung.lv2
+  dependencies: []
