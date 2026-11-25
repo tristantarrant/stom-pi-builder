@@ -1,6 +1,6 @@
 # Plugins
 
-175 plugins across 7 build systems. All built natively on aarch64 (Pi 5).
+176 plugins across 7 build systems. All built natively on aarch64 (Pi 5).
 
 ## Overdrives & Distortion
 
@@ -161,6 +161,7 @@
 | ams | AMS modular synth modules | Make | 1 |
 | dexed | Yamaha DX7 FM synthesizer | Make | 1 |
 | fluidplug | SoundFont-based instrument collection (FluidSynth) | Make | 26 |
+| mod-gsynth-plugins | Guitar/bass synth voices from MOD's GSYNTH pedalboards (GSynth, Flexible, Acid Bass, Minor Dub, Bassline) | CMake | 5 |
 | samplv1 | Polyphonic sampler synthesizer | Autotools | 1 |
 | setbfree | Hammond B3 organ emulation | Make | 2 |
 | sfizz | SFZ sample player | CMake | 1 |

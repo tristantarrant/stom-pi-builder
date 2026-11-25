@@ -1,0 +1,22 @@
+plugin:
+  name: mod-gsynth-plugins
+  version: main
+  source:
+    type: git
+    url: https://github.com/mod-audio/mod-gsynth-plugins.git
+  build:
+    - for d in mod-gsynth mod-gsynth-flexible mod-gsynth-acid-bass
+        mod-gsynth-minor-dub mod-gsynth-bassline; do
+        cmake -S ${d} -B build/${d} -DCMAKE_BUILD_TYPE=Release &&
+        cmake --build build/${d} --parallel || exit 1;
+      done
+  install:
+    - cp -rv build/*/mod-gsynth*.lv2 ${LV2_DIR}/
+  bundles:
+    - mod-gsynth.lv2
+    - mod-gsynth-flexible.lv2
+    - mod-gsynth-acid-bass.lv2
+    - mod-gsynth-minor-dub.lv2
+    - mod-gsynth-bassline.lv2
+  dependencies:
+    - libfftw3-dev
