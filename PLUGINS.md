@@ -184,6 +184,7 @@
 |---|---|---|---|
 | midimsg | MIDI message display/generator | Make | 1 |
 | mod-midi-utilities | MIDI channel filter, CC map, etc. | Make | 8 |
+| stringler | Guitar-MIDI expression engine: audio/MIDI to expressive MIDI (DPF) | Make | 1 |
 | vallsv-midi-display | MIDI message display | Make | 1 |
 | x42-midifilter | MIDI event filter/router | Make | 1 |
 | x42-midigen | MIDI pattern generator | Make | 1 |

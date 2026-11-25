@@ -1,0 +1,13 @@
+plugin:
+  name: stringler
+  version: main
+  source:
+    type: git
+    url: https://github.com/tristantarrant/stringler.git
+  build:
+    - make
+  install:
+    - make install INSTALL_DIR=${LV2_DIR}
+  bundles:
+    - stringler.lv2
+  dependencies: []
